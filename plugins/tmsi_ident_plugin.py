@@ -2,6 +2,9 @@
 import Queue
 import os
 import time
+from tmsi import *
+from math import pi
+
 
 from adapter.gat_app_sms_adapter import GatAppSmsAdapter
 from core.adapterinterfaces.types import SmsType
@@ -55,27 +58,27 @@ class TmsiIdentificationPlugin(PluginBase):
 
         if freq is not None:
             if band:
-                if not arfcn.is_valid_downlink(freq, band):
+                if not arfcn_converter.is_valid_downlink(freq, band):
                     self.printmsg("Frequency is not valid in the specified band")
                     return
                 else:
-                    arfcn = arfcn.downlink2arfcn(freq, band)
+                    arfcn = arfcn_converter.downlink2arfcn(freq, band)
             else:
-                for band in arfcn.get_bands():
-                    if arfcn.is_valid_downlink(freq, band):
-                        arfcn = arfcn.downlink2arfcn(freq, band)
+                for band in arfcn_converter.get_bands():
+                    if arfcn_converter.is_valid_downlink(freq, band):
+                        arfcn = arfcn_converter.downlink2arfcn(freq, band)
                         break
         elif arfcn is not None:
             if band:
-                if not arfcn.is_valid_arfcn(arfcn, band):
+                if not arfcn_converter.is_valid_arfcn(arfcn, band):
                     self.printmsg("ARFCN is not valid in the specified band")
                     return
                 else:
-                    freq = arfcn.arfcn2downlink(arfcn, band)
+                    freq = arfcn_converter.arfcn2downlink(arfcn, band)
             else:
-                for band in arfcn.get_bands():
-                    if arfcn.is_valid_arfcn(arfcn, band):
-                        freq = arfcn.arfcn2downlink(arfcn, band)
+                for band in arfcn_converter.get_bands():
+                    if arfcn_converter.is_valid_arfcn(arfcn, band):
+                        freq = arfcn_converter.arfcn2downlink(arfcn, band)
                         break
 
         # todo: stop if max_iterations < 6
@@ -92,16 +95,21 @@ class TmsiIdentificationPlugin(PluginBase):
         i = 0
 
         try:
+            print "---------------------------------------------------------------start-----------------------------------------------"
             while i < max_iterations:
-                flowgraph = TmsiLiveCapture(timeslot=timeslot, chan_mode=mode, fc=freq, arfcn=arfcn,
-                                            samp_rate=sample_rate,
-                                            ppm=ppm, gain=gain)
+
+                print timeslot, mode, freq, arfcn, sample_rate, ppm, gain
+
+                flowgraph = TmsiLiveCapture(timeslot=timeslot, chan_mode=mode, fc=freq, arfcn=arfcn, samp_rate=sample_rate, ppm=ppm, gain=gain)
+                print "###################################################"
                 with Silencer():
                     flowgraph.start()
                     response_received = False
                     adapter.send(sms_type=SmsType.MWID_Report, msisdn=msisdn, text=None)
 
                     start = time.time()
+                    print start
+
                     now = start
 
                     while (now - start) < 15:

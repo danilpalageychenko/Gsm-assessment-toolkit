@@ -2,7 +2,7 @@
 from math import pi
 
 import grgsm
-import osmosdr
+from osmosdr import source as o_source
 import pmt
 from gnuradio import blocks
 from gnuradio import gr
@@ -11,6 +11,7 @@ from gnuradio import gr
 class grgsm_capture(gr.top_block):
     def __init__(self, fc, gain, samp_rate, ppm, arfcn, cfile=None, burst_file=None, band=None, verbose=False,
                  gsmtap=False, rec_length=None, args=""):
+        print "4"
 
         gr.top_block.__init__(self, "Gr-gsm Capture")
 
@@ -33,8 +34,9 @@ class grgsm_capture(gr.top_block):
         ##################################################
         # Processing Blocks
         ##################################################
+        print "2"
 
-        self.rtlsdr_source = osmosdr.source(args="numchan=" + str(1) + " " + args)
+        self.rtlsdr_source = o_source(args="numchan=" + str(1) + " " + args)
         self.rtlsdr_source.set_sample_rate(samp_rate)
         self.rtlsdr_source.set_center_freq(fc - shiftoff, 0)
         self.rtlsdr_source.set_freq_corr(ppm, 0)

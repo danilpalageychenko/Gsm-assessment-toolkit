@@ -2,6 +2,7 @@
 import grgsm
 from gnuradio import blocks
 from gnuradio import gr
+from osmosdr import source as o_source
 
 
 class TmsiCapture(gr.top_block):
@@ -81,6 +82,7 @@ class TmsiCapture(gr.top_block):
 
 class TmsiLiveCapture(gr.top_block):
     def __init__(self, timeslot=0, chan_mode='BCCH', fc=None, arfcn=0, samp_rate=2e6, ppm=0, gain=30):
+
         gr.top_block.__init__(self, "gr-gsm TMSI Capture")
         self.rec_length = 15
 
@@ -100,8 +102,7 @@ class TmsiLiveCapture(gr.top_block):
         ##################################################
         # Blocks
         ##################################################
-
-        self.rtlsdr_source = osmosdr.source(args="numchan=" + str(1) + " " + self.args)
+        self.rtlsdr_source = o_source(args="numchan=" + str(1) + " " + self.args)
         self.rtlsdr_source.set_sample_rate(samp_rate)
         self.rtlsdr_source.set_center_freq(fc - shiftoff, 0)
         self.rtlsdr_source.set_freq_corr(ppm, 0)
